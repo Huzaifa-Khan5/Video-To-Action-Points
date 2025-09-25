@@ -6,9 +6,9 @@ from typing import List
 from langchain.schema import Document
 from langchain_google_genai import ChatGoogleGenerativeAI
 import os
-from docx import Document
-from docx.shared import Pt
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+# from docx import Document
+# from docx.shared import Pt
+# from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 import re
 from fpdf import FPDF
 from flask import Flask, request, jsonify, send_file,render_template,flash
@@ -17,7 +17,8 @@ app = Flask(__name__)
 
 load_dotenv()
 
-llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
+os.environ["PATH"] += os.pathsep + r"E:\Video-To-Action-Points\ffmpeg\bin"
 
 
 def load_text_file(file_path: str) -> List[Document]:
@@ -34,84 +35,84 @@ def load_document(file_path: str) -> List[Document]:
 def genarate_action_points(text_docs):
     # Extract the text content from the document
     print('generating action points')
-    response=llm.invoke(f'This is the transcript from the meeting {text_docs[0].page_content}. Can you generate the action points from this text.And keep focus on every small detail in the transcript.')
+    response=llm.invoke(f'''You have this text {text_docs[0].page_content}. Give me the summary of the text.''')
     action_points=(response.content)
     return action_points
 
-def save_action_points_word(action_points,name):
-    print("Saving action points...")
-    doc = Document()
+# def save_action_points_word(action_points,name):
+#     print("Saving action points...")
+#     doc = Document()
     
-    # Add a title
-    title = doc.add_heading('Project Action Points', level=0)
-    title.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+#     # Add a title
+#     title = doc.add_heading('Project Action Points', level=0)
+#     title.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
     
-    # Split the text into lines
-    lines = action_points.strip().split('\n')
+#     # Split the text into lines
+#     lines = action_points.strip().split('\n')
     
-    current_level = 0
+#     current_level = 0
     
-    for line in lines:
-        # Skip empty lines
-        if not line.strip():
-            continue
+#     for line in lines:
+#         # Skip empty lines
+#         if not line.strip():
+#             continue
         
-        # Determine the line type and format accordingly
-        line = line.strip()
+#         # Determine the line type and format accordingly
+#         line = line.strip()
         
-        # Main section headers (I., II., etc.)
-        if re.match(r'^[IVX]+\.', line):
-            doc.add_heading(line, level=1)
-            current_level = 1
+#         # Main section headers (I., II., etc.)
+#         if re.match(r'^[IVX]+\.', line):
+#             doc.add_heading(line, level=1)
+#             current_level = 1
             
-        # Main bullet points (start with *)
-        elif line.startswith('*'):
-            # Check if it's a main point or sub-point based on indentation
-            indent_level = len(line) - len(line.lstrip())
+#         # Main bullet points (start with *)
+#         elif line.startswith('*'):
+#             # Check if it's a main point or sub-point based on indentation
+#             indent_level = len(line) - len(line.lstrip())
             
-            if indent_level <= 2:  # Main bullet point
-                text = line.lstrip('* ').strip()
-                p = doc.add_paragraph(style='List Bullet')
+#             if indent_level <= 2:  # Main bullet point
+#                 text = line.lstrip('* ').strip()
+#                 p = doc.add_paragraph(style='List Bullet')
                 
-                # Check if the text has bold formatting (surrounded by **)
-                if '**' in text:
-                    # Handle bold text portions
-                    parts = text.split('**')
-                    for i, part in enumerate(parts):
-                        if i % 2 == 1:  # Odd indices are bold
-                            p.add_run(part).bold = True
-                        else:
-                            p.add_run(part)
-                else:
-                    p.add_run(text)
+#                 # Check if the text has bold formatting (surrounded by **)
+#                 if '**' in text:
+#                     # Handle bold text portions
+#                     parts = text.split('**')
+#                     for i, part in enumerate(parts):
+#                         if i % 2 == 1:  # Odd indices are bold
+#                             p.add_run(part).bold = True
+#                         else:
+#                             p.add_run(part)
+#                 else:
+#                     p.add_run(text)
                 
-                current_level = 2
+#                 current_level = 2
                 
-            else:  # Sub-bullet point
-                text = line.lstrip('* ').strip()
-                p = doc.add_paragraph(style='List Bullet 2')
+#             else:  # Sub-bullet point
+#                 text = line.lstrip('* ').strip()
+#                 p = doc.add_paragraph(style='List Bullet 2')
                 
-                # Check if the text has bold formatting
-                if '**' in text:
-                    parts = text.split('**')
-                    for i, part in enumerate(parts):
-                        if i % 2 == 1:  # Odd indices are bold
-                            p.add_run(part).bold = True
-                        else:
-                            p.add_run(part)
-                else:
-                    p.add_run(text)
+#                 # Check if the text has bold formatting
+#                 if '**' in text:
+#                     parts = text.split('**')
+#                     for i, part in enumerate(parts):
+#                         if i % 2 == 1:  # Odd indices are bold
+#                             p.add_run(part).bold = True
+#                         else:
+#                             p.add_run(part)
+#                 else:
+#                     p.add_run(text)
                 
-                current_level = 3
+#                 current_level = 3
                 
-        # Regular text - treat as paragraph
-        else:
-            p = doc.add_paragraph(line)
+#         # Regular text - treat as paragraph
+#         else:
+#             p = doc.add_paragraph(line)
     
-    # Save the document
+#     # Save the document
    
-    doc.save(f'{name}_action_points.docx')
-    print(f"Action points saved to {name}.docx")
+#     doc.save(f'{name}_action_points.docx')
+#     print(f"Action points saved to {name}.docx")
 
 def save_action_points_pdf(action_points,name):
     pdf = FPDF()
@@ -129,7 +130,7 @@ def extract_audio_from_video(video_path, audio_output_path):
     audio_clip = video_clip.audio
     audio_clip.write_audiofile(audio_output_path)
 
-def transcribe_audio(audio_path, model_size="base"):
+def transcribe_audio(audio_path, model_size="medium"):
     print("Transcribing audio...")
        
     model = whisper.load_model(model_size)
@@ -169,21 +170,20 @@ def video_to_text(output_text_path=None, model_size="base"):
 
         text_docs = load_document(output_text_path)
         action_points=genarate_action_points(text_docs)
-        save_action_points_word(action_points,name)
-        save_action_points_pdf(action_points,name)
-        data={"status":'success','action_points':action_points}
+        # save_action_points_word(action_points,name)
+        # save_action_points_pdf(action_points,name)
+        data={"status":'success','Summary':action_points,"transcript":result}
 
 
         return jsonify(data)
-    return render_template('index.html')
 
 
-@app.route('/download_word', methods=['GET'])
-def download_word():
-    file_path = f"{name}_action_points.docx"  # Ensure this path is correct
-    return send_file(file_path, 
-                     as_attachment=True, 
-                     mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+# @app.route('/download_word', methods=['GET'])
+# def download_word():
+#     file_path = f"{name}_action_points.docx"  # Ensure this path is correct
+#     return send_file(file_path, 
+#                      as_attachment=True, 
+#                      mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
 
 @app.route('/download_pdf')
 def download_pdf():
@@ -201,7 +201,6 @@ def download_pdf():
             as_attachment=True, 
             
         )
-
 
 if __name__ == "__main__":
     app.run(debug=True)

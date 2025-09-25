@@ -1,0 +1,18 @@
+[project]
+name = "video-to-action-points"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]>=0.117.1",
+    "ffmpeg-python>=0.2.0",
+    "flask>=3.1.2",
+    "fpdf>=1.7.2",
+    "langchain-community>=0.3.29",
+    "langchain-google-genai>=2.1.12",
+    "moviepy==1.0.3",
+    "openai-whisper>=20250625",
+    "python-dotenv>=1.1.1",
+    "whisper>=1.1.10",
+]
