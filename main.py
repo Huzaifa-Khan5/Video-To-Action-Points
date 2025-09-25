@@ -25,7 +25,7 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
-llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
+llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite")
 os.environ["PATH"] += os.pathsep + r"E:\Video-To-Action-Points\ffmpeg\bin"
 
 
@@ -35,12 +35,12 @@ def verify_api_key(request: Request):
         raise HTTPException(status_code=401, detail="Unauthorized: Invalid API key")
     return True
 
-def load_text_file(file_path: str) -> List[Document]:
-    try:
-        loader = TextLoader(file_path, encoding="utf-8")
-        return loader.load()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to load text file: {e}")
+# def load_text_file(file_path: str) -> List[Document]:
+#     try:
+#         loader = TextLoader(file_path, encoding="utf-8")
+#         return loader.load()
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Failed to load text file: {e}")
 
 
 # def load_document(file_path: str) -> List[Document]:
@@ -103,7 +103,6 @@ def transcribe_audio(audio_path: str, model_size: str = "base") -> str:
 
 @app.post("/video_to_text")
 async def video_to_text(video: UploadFile = File(...), model_size: str = "base",authorized: bool = Depends(verify_api_key)):
-    global name
     try:
         file_name = video.filename
         # name = os.path.splitext(file_name)[0]
@@ -116,7 +115,7 @@ async def video_to_text(video: UploadFile = File(...), model_size: str = "base",
         #     raise HTTPException(status_code=400, detail="Invalid file format. Please upload a .mp4 video file.")
 
         intermediate_audio_path = "extracted_audio.wav"
-        output_text_path = f"{name}_transcription.txt"
+        # output_text_path = f"{name}_transcription.txt"
 
         # Process video → audio → text
         extract_audio_from_video(file_name, intermediate_audio_path)
